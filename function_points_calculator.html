@@ -234,6 +234,94 @@
             margin-top: 20px;
         }
 
+        .export-section {
+            background: #fff8e1;
+            border-left-color: #ff9800;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .export-section h2::before {
+            content: '📄';
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .export-btn {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 160px;
+            justify-content: center;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 152, 0, 0.3);
+        }
+
+        .client-info {
+            background: #f0f8ff;
+            border-left-color: #2196f3;
+            margin-top: 30px;
+        }
+
+        .client-info h2::before {
+            content: '👤';
+        }
+
+        .client-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .client-input {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .client-input label {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .client-input input, .client-input textarea {
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .client-input textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .client-input input:focus, .client-input textarea:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+
         .calculate-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -315,6 +403,20 @@
                         Dados referenciados de outras aplicações (APIs, bancos externos)
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Seção de Exportação -->
+        <div class="export-section" id="exportacao" style="display: none;">
+            <h2>Gerar Documento</h2>
+            <p>Exporte os cálculos em formato profissional para apresentar ao cliente</p>
+            <div class="export-buttons">
+                <button class="export-btn" onclick="gerarPDF()">
+                    📄 Gerar PDF
+                </button>
+                <button class="export-btn" onclick="gerarExcel()">
+                    📊 Gerar Excel
+                </button>
             </div>
         </div>
 
@@ -498,6 +600,37 @@
             </div>
         </div>
 
+        <!-- Informações do Cliente -->
+        <div class="client-info">
+            <h2>Informações do Orçamento</h2>
+            <div class="client-grid">
+                <div class="client-input">
+                    <label>Nome da Empresa/Cliente:</label>
+                    <input type="text" id="cliente_nome" placeholder="Ex: Empresa XYZ Ltda">
+                </div>
+                <div class="client-input">
+                    <label>Nome do Projeto:</label>
+                    <input type="text" id="projeto_nome" placeholder="Ex: Sistema de Gestão Comercial">
+                </div>
+                <div class="client-input">
+                    <label>Seu Nome/Empresa:</label>
+                    <input type="text" id="desenvolvedor_nome" placeholder="Ex: João Silva - Desenvolvimento de Sistemas">
+                </div>
+                <div class="client-input">
+                    <label>E-mail de Contato:</label>
+                    <input type="email" id="desenvolvedor_email" placeholder="Ex: joao@exemplo.com">
+                </div>
+                <div class="client-input">
+                    <label>Telefone:</label>
+                    <input type="tel" id="desenvolvedor_telefone" placeholder="Ex: (65) 99999-9999">
+                </div>
+                <div class="client-input">
+                    <label>Observações do Projeto:</label>
+                    <textarea id="projeto_observacoes" placeholder="Ex: Prazo estimado, tecnologias utilizadas, requisitos especiais..."></textarea>
+                </div>
+            </div>
+        </div>
+
         <button class="calculate-btn" onclick="calcular()">Calcular Pontos de Função</button>
 
         <!-- Resultados -->
@@ -551,6 +684,8 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         function calcular() {
             // Calcular PF Não Ajustados
@@ -599,6 +734,7 @@
             
             document.getElementById('resultados').style.display = 'block';
             document.getElementById('precificacao').style.display = 'block';
+            document.getElementById('exportacao').style.display = 'block';
             
             // Scroll suave para os resultados
             document.getElementById('resultados').scrollIntoView({ 
@@ -636,6 +772,319 @@
         document.getElementById('valor_pf').addEventListener('input', calcularPrecificacao);
         document.getElementById('horas_pf').addEventListener('input', calcularPrecificacao);
         document.getElementById('valor_hora').addEventListener('input', calcularPrecificacao);
+
+        function gerarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Dados do orçamento
+            const clienteNome = document.getElementById('cliente_nome').value || 'Cliente não informado';
+            const projetoNome = document.getElementById('projeto_nome').value || 'Projeto não informado';
+            const desenvolvedorNome = document.getElementById('desenvolvedor_nome').value || 'Desenvolvedor não informado';
+            const desenvolvedorEmail = document.getElementById('desenvolvedor_email').value || '';
+            const desenvolvedorTelefone = document.getElementById('desenvolvedor_telefone').value || '';
+            const projetoObservacoes = document.getElementById('projeto_observacoes').value || '';
+            
+            // Dados dos cálculos
+            const pfna = document.getElementById('pfna_resultado').textContent;
+            const fat = document.getElementById('fat_resultado').textContent;
+            const pfa = document.getElementById('pfa_resultado').textContent;
+            const precoPF = document.getElementById('preco_pf').textContent;
+            const precoHoras = document.getElementById('preco_horas').textContent;
+            const totalHoras = document.getElementById('total_horas').textContent;
+            
+            // Configurar documento
+            doc.setFontSize(20);
+            doc.setTextColor(40);
+            doc.text('ORÇAMENTO - DESENVOLVIMENTO DE SISTEMA', 20, 30);
+            
+            // Linha separadora
+            doc.setDrawColor(102, 126, 234);
+            doc.setLineWidth(1);
+            doc.line(20, 35, 190, 35);
+            
+            // Informações do cliente
+            doc.setFontSize(14);
+            doc.setTextColor(60);
+            doc.text('INFORMAÇÕES DO PROJETO', 20, 50);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(80);
+            doc.text(`Cliente: ${clienteNome}`, 20, 60);
+            doc.text(`Projeto: ${projetoNome}`, 20, 67);
+            doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 20, 74);
+            
+            // Informações do desenvolvedor
+            doc.setFontSize(14);
+            doc.setTextColor(60);
+            doc.text('INFORMAÇÕES DO DESENVOLVEDOR', 20, 90);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(80);
+            doc.text(`Nome/Empresa: ${desenvolvedorNome}`, 20, 100);
+            if (desenvolvedorEmail) doc.text(`E-mail: ${desenvolvedorEmail}`, 20, 107);
+            if (desenvolvedorTelefone) doc.text(`Telefone: ${desenvolvedorTelefone}`, 20, 114);
+            
+            // Análise de Pontos de Função
+            doc.setFontSize(14);
+            doc.setTextColor(60);
+            doc.text('ANÁLISE DE PONTOS DE FUNÇÃO', 20, 130);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(80);
+            
+            let yPos = 140;
+            
+            // Funções de Dados
+            doc.text('FUNÇÕES DE DADOS:', 20, yPos);
+            yPos += 10;
+            
+            const aliSimples = parseInt(document.getElementById('ali_simples').value || 0);
+            const aliMedio = parseInt(document.getElementById('ali_medio').value || 0);
+            const aliComplexo = parseInt(document.getElementById('ali_complexo').value || 0);
+            
+            if (aliSimples > 0) { doc.text(`• ALI Simples: ${aliSimples} × 7 = ${aliSimples * 7} PF`, 25, yPos); yPos += 7; }
+            if (aliMedio > 0) { doc.text(`• ALI Médio: ${aliMedio} × 10 = ${aliMedio * 10} PF`, 25, yPos); yPos += 7; }
+            if (aliComplexo > 0) { doc.text(`• ALI Complexo: ${aliComplexo} × 15 = ${aliComplexo * 15} PF`, 25, yPos); yPos += 7; }
+            
+            const aieSimples = parseInt(document.getElementById('aie_simples').value || 0);
+            const aieMedio = parseInt(document.getElementById('aie_medio').value || 0);
+            const aieComplexo = parseInt(document.getElementById('aie_complexo').value || 0);
+            
+            if (aieSimples > 0) { doc.text(`• AIE Simples: ${aieSimples} × 5 = ${aieSimples * 5} PF`, 25, yPos); yPos += 7; }
+            if (aieMedio > 0) { doc.text(`• AIE Médio: ${aieMedio} × 7 = ${aieMedio * 7} PF`, 25, yPos); yPos += 7; }
+            if (aieComplexo > 0) { doc.text(`• AIE Complexo: ${aieComplexo} × 10 = ${aieComplexo * 10} PF`, 25, yPos); yPos += 7; }
+            
+            yPos += 5;
+            doc.text('FUNÇÕES TRANSACIONAIS:', 20, yPos);
+            yPos += 10;
+            
+            const eeSimples = parseInt(document.getElementById('ee_simples').value || 0);
+            const eeMedio = parseInt(document.getElementById('ee_medio').value || 0);
+            const eeComplexo = parseInt(document.getElementById('ee_complexo').value || 0);
+            
+            if (eeSimples > 0) { doc.text(`• EE Simples: ${eeSimples} × 3 = ${eeSimples * 3} PF`, 25, yPos); yPos += 7; }
+            if (eeMedio > 0) { doc.text(`• EE Médio: ${eeMedio} × 4 = ${eeMedio * 4} PF`, 25, yPos); yPos += 7; }
+            if (eeComplexo > 0) { doc.text(`• EE Complexo: ${eeComplexo} × 6 = ${eeComplexo * 6} PF`, 25, yPos); yPos += 7; }
+            
+            const seSimples = parseInt(document.getElementById('se_simples').value || 0);
+            const seMedio = parseInt(document.getElementById('se_medio').value || 0);
+            const seComplexo = parseInt(document.getElementById('se_complexo').value || 0);
+            
+            if (seSimples > 0) { doc.text(`• SE Simples: ${seSimples} × 4 = ${seSimples * 4} PF`, 25, yPos); yPos += 7; }
+            if (seMedio > 0) { doc.text(`• SE Médio: ${seMedio} × 5 = ${seMedio * 5} PF`, 25, yPos); yPos += 7; }
+            if (seComplexo > 0) { doc.text(`• SE Complexo: ${seComplexo} × 7 = ${seComplexo * 7} PF`, 25, yPos); yPos += 7; }
+            
+            const ceSimples = parseInt(document.getElementById('ce_simples').value || 0);
+            const ceMedio = parseInt(document.getElementById('ce_medio').value || 0);
+            const ceComplexo = parseInt(document.getElementById('ce_complexo').value || 0);
+            
+            if (ceSimples > 0) { doc.text(`• CE Simples: ${ceSimples} × 3 = ${ceSimples * 3} PF`, 25, yPos); yPos += 7; }
+            if (ceMedio > 0) { doc.text(`• CE Médio: ${ceMedio} × 4 = ${ceMedio * 4} PF`, 25, yPos); yPos += 7; }
+            if (ceComplexo > 0) { doc.text(`• CE Complexo: ${ceComplexo} × 6 = ${ceComplexo * 6} PF`, 25, yPos); yPos += 7; }
+            
+            // Nova página se necessário
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 30;
+            }
+            
+            // Resultados
+            yPos += 10;
+            doc.setFontSize(14);
+            doc.setTextColor(60);
+            doc.text('RESULTADOS', 20, yPos);
+            
+            yPos += 15;
+            doc.setFontSize(12);
+            doc.setTextColor(80);
+            doc.text(`Pontos de Função Não Ajustados: ${pfna}`, 20, yPos);
+            yPos += 10;
+            doc.text(`Fator de Ajuste Técnico: ${fat}`, 20, yPos);
+            yPos += 10;
+            doc.text(`Pontos de Função Ajustados: ${pfa}`, 20, yPos);
+            
+            // Precificação
+            yPos += 20;
+            doc.setFontSize(14);
+            doc.setTextColor(60);
+            doc.text('PRECIFICAÇÃO', 20, yPos);
+            
+            yPos += 15;
+            doc.setFontSize(12);
+            doc.setTextColor(80);
+            doc.text(`Estimativa de Horas: ${totalHoras}h`, 20, yPos);
+            yPos += 10;
+            doc.text(`Valor por Pontos de Função: R$ ${precoPF}`, 20, yPos);
+            yPos += 10;
+            doc.text(`Valor por Horas Trabalhadas: R$ ${precoHoras}`, 20, yPos);
+            
+            // Observações
+            if (projetoObservacoes) {
+                yPos += 20;
+                doc.setFontSize(14);
+                doc.setTextColor(60);
+                doc.text('OBSERVAÇÕES', 20, yPos);
+                
+                yPos += 15;
+                doc.setFontSize(10);
+                doc.setTextColor(80);
+                const observacoesLines = doc.splitTextToSize(projetoObservacoes, 170);
+                doc.text(observacoesLines, 20, yPos);
+            }
+            
+            // Rodapé
+            doc.setFontSize(8);
+            doc.setTextColor(120);
+            doc.text('Orçamento gerado pela Calculadora de Pontos de Função', 20, 280);
+            doc.text(`Data de geração: ${new Date().toLocaleString('pt-BR')}`, 20, 285);
+            
+            // Salvar PDF
+            const nomeArquivo = `Orcamento_${projetoNome.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+            doc.save(nomeArquivo);
+        }
+
+        function gerarExcel() {
+            const wb = XLSX.utils.book_new();
+            
+            // Dados do orçamento
+            const clienteNome = document.getElementById('cliente_nome').value || 'Cliente não informado';
+            const projetoNome = document.getElementById('projeto_nome').value || 'Projeto não informado';
+            const desenvolvedorNome = document.getElementById('desenvolvedor_nome').value || 'Desenvolvedor não informado';
+            const desenvolvedorEmail = document.getElementById('desenvolvedor_email').value || '';
+            const desenvolvedorTelefone = document.getElementById('desenvolvedor_telefone').value || '';
+            const projetoObservacoes = document.getElementById('projeto_observacoes').value || '';
+            
+            // Dados dos cálculos
+            const pfna = document.getElementById('pfna_resultado').textContent;
+            const fat = document.getElementById('fat_resultado').textContent;
+            const pfa = document.getElementById('pfa_resultado').textContent;
+            const precoPF = document.getElementById('preco_pf').textContent;
+            const precoHoras = document.getElementById('preco_horas').textContent;
+            const totalHoras = document.getElementById('total_horas').textContent;
+            
+            // Planilha de Informações Gerais
+            const wsInfo = XLSX.utils.aoa_to_sheet([
+                ['ORÇAMENTO - DESENVOLVIMENTO DE SISTEMA'],
+                [''],
+                ['INFORMAÇÕES DO PROJETO'],
+                ['Cliente:', clienteNome],
+                ['Projeto:', projetoNome],
+                ['Data:', new Date().toLocaleDateString('pt-BR')],
+                [''],
+                ['INFORMAÇÕES DO DESENVOLVEDOR'],
+                ['Nome/Empresa:', desenvolvedorNome],
+                ['E-mail:', desenvolvedorEmail],
+                ['Telefone:', desenvolvedorTelefone],
+                [''],
+                ['RESULTADOS'],
+                ['Pontos de Função Não Ajustados:', pfna],
+                ['Fator de Ajuste Técnico:', fat],
+                ['Pontos de Função Ajustados:', pfa],
+                [''],
+                ['PRECIFICAÇÃO'],
+                ['Estimativa de Horas:', totalHoras + 'h'],
+                ['Valor por Pontos de Função:', 'R$ ' + precoPF],
+                ['Valor por Horas Trabalhadas:', 'R$ ' + precoHoras],
+                [''],
+                ['OBSERVAÇÕES'],
+                [projetoObservacoes]
+            ]);
+            
+            // Planilha de Detalhamento
+            const detalhamento = [
+                ['DETALHAMENTO DOS PONTOS DE FUNÇÃO'],
+                [''],
+                ['FUNÇÕES DE DADOS'],
+                ['Tipo', 'Complexidade', 'Quantidade', 'Peso', 'Total PF'],
+            ];
+            
+            // ALI
+            const aliSimples = parseInt(document.getElementById('ali_simples').value || 0);
+            const aliMedio = parseInt(document.getElementById('ali_medio').value || 0);
+            const aliComplexo = parseInt(document.getElementById('ali_complexo').value || 0);
+            
+            if (aliSimples > 0) detalhamento.push(['ALI', 'Simples', aliSimples, 7, aliSimples * 7]);
+            if (aliMedio > 0) detalhamento.push(['ALI', 'Médio', aliMedio, 10, aliMedio * 10]);
+            if (aliComplexo > 0) detalhamento.push(['ALI', 'Complexo', aliComplexo, 15, aliComplexo * 15]);
+            
+            // AIE
+            const aieSimples = parseInt(document.getElementById('aie_simples').value || 0);
+            const aieMedio = parseInt(document.getElementById('aie_medio').value || 0);
+            const aieComplexo = parseInt(document.getElementById('aie_complexo').value || 0);
+            
+            if (aieSimples > 0) detalhamento.push(['AIE', 'Simples', aieSimples, 5, aieSimples * 5]);
+            if (aieMedio > 0) detalhamento.push(['AIE', 'Médio', aieMedio, 7, aieMedio * 7]);
+            if (aieComplexo > 0) detalhamento.push(['AIE', 'Complexo', aieComplexo, 10, aieComplexo * 10]);
+            
+            detalhamento.push(['']);
+            detalhamento.push(['FUNÇÕES TRANSACIONAIS']);
+            detalhamento.push(['Tipo', 'Complexidade', 'Quantidade', 'Peso', 'Total PF']);
+            
+            // EE
+            const eeSimples = parseInt(document.getElementById('ee_simples').value || 0);
+            const eeMedio = parseInt(document.getElementById('ee_medio').value || 0);
+            const eeComplexo = parseInt(document.getElementById('ee_complexo').value || 0);
+            
+            if (eeSimples > 0) detalhamento.push(['EE', 'Simples', eeSimples, 3, eeSimples * 3]);
+            if (eeMedio > 0) detalhamento.push(['EE', 'Médio', eeMedio, 4, eeMedio * 4]);
+            if (eeComplexo > 0) detalhamento.push(['EE', 'Complexo', eeComplexo, 6, eeComplexo * 6]);
+            
+            // SE
+            const seSimples = parseInt(document.getElementById('se_simples').value || 0);
+            const seMedio = parseInt(document.getElementById('se_medio').value || 0);
+            const seComplexo = parseInt(document.getElementById('se_complexo').value || 0);
+            
+            if (seSimples > 0) detalhamento.push(['SE', 'Simples', seSimples, 4, seSimples * 4]);
+            if (seMedio > 0) detalhamento.push(['SE', 'Médio', seMedio, 5, seMedio * 5]);
+            if (seComplexo > 0) detalhamento.push(['SE', 'Complexo', seComplexo, 7, seComplexo * 7]);
+            
+            // CE
+            const ceSimples = parseInt(document.getElementById('ce_simples').value || 0);
+            const ceMedio = parseInt(document.getElementById('ce_medio').value || 0);
+            const ceComplexo = parseInt(document.getElementById('ce_complexo').value || 0);
+            
+            if (ceSimples > 0) detalhamento.push(['CE', 'Simples', ceSimples, 3, ceSimples * 3]);
+            if (ceMedio > 0) detalhamento.push(['CE', 'Médio', ceMedio, 4, ceMedio * 4]);
+            if (ceComplexo > 0) detalhamento.push(['CE', 'Complexo', ceComplexo, 6, ceComplexo * 6]);
+            
+            const wsDetalhamento = XLSX.utils.aoa_to_sheet(detalhamento);
+            
+            // Planilha de Fatores de Ajuste
+            const fatores = [
+                ['FATORES DE AJUSTE TÉCNICO'],
+                [''],
+                ['Fator', 'Valor'],
+                ['Comunicação de dados', document.getElementById('fator_1').value],
+                ['Processamento distribuído', document.getElementById('fator_2').value],
+                ['Performance', document.getElementById('fator_3').value],
+                ['Configuração altamente utilizada', document.getElementById('fator_4').value],
+                ['Taxa de transação', document.getElementById('fator_5').value],
+                ['Entrada de dados online', document.getElementById('fator_6').value],
+                ['Eficiência do usuário final', document.getElementById('fator_7').value],
+                ['Atualização online', document.getElementById('fator_8').value],
+                ['Processamento complexo', document.getElementById('fator_9').value],
+                ['Reusabilidade', document.getElementById('fator_10').value],
+                ['Facilidade de instalação', document.getElementById('fator_11').value],
+                ['Facilidade operacional', document.getElementById('fator_12').value],
+                ['Múltiplos locais', document.getElementById('fator_13').value],
+                ['Facilidade de mudanças', document.getElementById('fator_14').value],
+                [''],
+                ['Soma dos fatores:', Array.from({length: 14}, (_, i) => parseInt(document.getElementById(`fator_${i+1}`).value || 0)).reduce((a, b) => a + b, 0)],
+                ['Fator de Ajuste (0.65 + 0.01 × soma):', fat]
+            ];
+            
+            const wsFatores = XLSX.utils.aoa_to_sheet(fatores);
+            
+            // Adicionar planilhas ao workbook
+            XLSX.utils.book_append_sheet(wb, wsInfo, 'Orçamento');
+            XLSX.utils.book_append_sheet(wb, wsDetalhamento, 'Detalhamento');
+            XLSX.utils.book_append_sheet(wb, wsFatores, 'Fatores de Ajuste');
+            
+            // Salvar arquivo
+            const nomeArquivo = `Orcamento_${projetoNome.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(wb, nomeArquivo);
+        }
     </script>
 </body>
 </html>
