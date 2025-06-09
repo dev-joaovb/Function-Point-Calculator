@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Pontos de Função</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .section {
+            background: #f8f9ff;
+            margin: 20px 0;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h2::before {
+            content: '📊';
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .function-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .function-item {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e0e7ff;
+        }
+
+        .function-item h3 {
+            color: #4c51bf;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .complexity-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 8px 12px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .complexity-label {
+            font-weight: 500;
+            color: #2d3748;
+            min-width: 80px;
+        }
+
+        .complexity-input {
+            width: 80px;
+            padding: 6px 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .complexity-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .complexity-weight {
+            font-weight: 600;
+            color: #667eea;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .factor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .factor-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e7ff;
+        }
+
+        .factor-label {
+            font-size: 14px;
+            color: #4a5568;
+            flex: 1;
+        }
+
+        .factor-select {
+            width: 60px;
+            padding: 4px 8px;
+            border: 2px solid #e2e8f0;
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+        }
+
+        .results {
+            background: linear-gradient(135deg, #4c51bf 0%, #667eea 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .results h2 {
+            margin-bottom: 20px;
+            font-size: 1.6em;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .result-item {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .result-value {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .result-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .pricing-section {
+            background: #f0fff4;
+            border-left-color: #48bb78;
+            margin-top: 30px;
+        }
+
+        .pricing-section h2::before {
+            content: '💰';
+        }
+
+        .pricing-input {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .pricing-input label {
+            font-weight: 600;
+            color: #2d3748;
+            min-width: 200px;
+        }
+
+        .pricing-input input {
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 150px;
+        }
+
+        .final-price {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-top: 20px;
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            margin: 20px auto;
+            display: block;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .info-tooltip {
+            background: #e6fffa;
+            border: 1px solid #81e6d9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #234e52;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora de Pontos de Função</h1>
+        
+        <!-- Funções de Dados -->
+        <div class="section">
+            <h2>Funções de Dados</h2>
+            <div class="function-grid">
+                <div class="function-item">
+                    <h3>ALI - Arquivo Lógico Interno</h3>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Simples:</span>
+                        <input type="number" class="complexity-input" id="ali_simples" min="0" value="0">
+                        <span class="complexity-weight">× 7</span>
+                    </div>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Médio:</span>
+                        <input type="number" class="complexity-input" id="ali_medio" min="0" value="0">
+                        <span class="complexity-weight">× 10</span>
+                    </div>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Complexo:</span>
+                        <input type="number" class="complexity-input" id="ali_complexo" min="0" value="0">
+                        <span class="complexity-weight">× 15</span>
+                    </div>
+                    <div class="info-tooltip">
+                        Dados mantidos pela aplicação (tabelas, arquivos de configuração)
+                    </div>
+                </div>
+
+                <div class="function-item">
+                    <h3>AIE - Arquivo de Interface Externa</h3>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Simples:</span>
+                        <input type="number" class="complexity-input" id="aie_simples" min="0" value="0">
+                        <span class="complexity-weight">× 5</span>
+                    </div>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Médio:</span>
+                        <input type="number" class="complexity-input" id="aie_medio" min="0" value="0">
+                        <span class="complexity-weight">× 7</span>
+                    </div>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Complexo:</span>
+                        <input type="number" class="complexity-input" id="aie_complexo" min="0" value="0">
+                        <span class="complexity-weight">× 10</span>
+                    </div>
+                    <div class="info-tooltip">
+                        Dados referenciados de outras aplicações (APIs, bancos externos)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Funções Transacionais -->
+        <div class="section">
+            <h2>Funções Transacionais</h2>
+            <div class="function-grid">
+                <div class="function-item">
+                    <h3>EE - Entrada Externa</h3>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Simples:</span>
+                        <input type="number" class="complexity-input" id="ee_simples" min="0" value="0">
+                        <span class="complexity-weight">× 3</span>
+                    </div>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Médio:</span>
+                        <input type="number" class="complexity-input" id="ee_medio" min="0" value="0">
+                        <span class="complexity-weight">× 4</span>
+                    </div>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Complexo:</span>
+                        <input type="number" class="complexity-input" id="ee_complexo" min="0" value="0">
+                        <span class="complexity-weight">× 6</span>
+                    </div>
+                    <div class="info-tooltip">
+                        Processos que recebem dados do usuário (formulários, uploads)
+                    </div>
+                </div>
+
+                <div class="function-item">
+                    <h3>SE - Saída Externa</h3>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Simples:</span>
+                        <input type="number" class="complexity-input" id="se_simples" min="0" value="0">
+                        <span class="complexity-weight">× 4</span>
+                    </div>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Médio:</span>
+                        <input type="number" class="complexity-input" id="se_medio" min="0" value="0">
+                        <span class="complexity-weight">× 5</span>
+                    </div>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Complexo:</span>
+                        <input type="number" class="complexity-input" id="se_complexo" min="0" value="0">
+                        <span class="complexity-weight">× 7</span>
+                    </div>
+                    <div class="info-tooltip">
+                        Saídas com cálculos ou processamento (relatórios, dashboards)
+                    </div>
+                </div>
+
+                <div class="function-item">
+                    <h3>CE - Consulta Externa</h3>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Simples:</span>
+                        <input type="number" class="complexity-input" id="ce_simples" min="0" value="0">
+                        <span class="complexity-weight">× 3</span>
+                    </div>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Médio:</span>
+                        <input type="number" class="complexity-input" id="ce_medio" min="0" value="0">
+                        <span class="complexity-weight">× 4</span>
+                    </div>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Complexo:</span>
+                        <input type="number" class="complexity-input" id="ce_complexo" min="0" value="0">
+                        <span class="complexity-weight">× 6</span>
+                    </div>
+                    <div class="info-tooltip">
+                        Consultas simples sem processamento (listagens, pesquisas)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fatores de Ajuste -->
+        <div class="section">
+            <h2>Fatores de Ajuste Técnico (0-5)</h2>
+            <div class="factor-grid">
+                <div class="factor-item">
+                    <span class="factor-label">Comunicação de dados</span>
+                    <select class="factor-select" id="fator_1">
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Processamento distribuído</span>
+                    <select class="factor-select" id="fator_2">
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Performance</span>
+                    <select class="factor-select" id="fator_3">
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Configuração altamente utilizada</span>
+                    <select class="factor-select" id="fator_4">
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Taxa de transação</span>
+                    <select class="factor-select" id="fator_5">
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Entrada de dados online</span>
+                    <select class="factor-select" id="fator_6">
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Eficiência do usuário final</span>
+                    <select class="factor-select" id="fator_7">
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Atualização online</span>
+                    <select class="factor-select" id="fator_8">
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Processamento complexo</span>
+                    <select class="factor-select" id="fator_9">
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Reusabilidade</span>
+                    <select class="factor-select" id="fator_10">
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Facilidade de instalação</span>
+                    <select class="factor-select" id="fator_11">
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Facilidade operacional</span>
+                    <select class="factor-select" id="fator_12">
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Múltiplos locais</span>
+                    <select class="factor-select" id="fator_13">
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+                <div class="factor-item">
+                    <span class="factor-label">Facilidade de mudanças</span>
+                    <select class="factor-select" id="fator_14">
+                        <option value="0">0</option><option value="1">1</option><option value="2">2</option>
+                        <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+                    </select>
+                </div>
+            </div>
+            <div class="info-tooltip">
+                0 = Sem influência, 1 = Influência mínima, 2 = Influência moderada, 3 = Influência média, 4 = Influência significativa, 5 = Influência forte
+            </div>
+        </div>
+
+        <button class="calculate-btn" onclick="calcular()">Calcular Pontos de Função</button>
+
+        <!-- Resultados -->
+        <div class="results" id="resultados" style="display: none;">
+            <h2>📊 Resultados dos Pontos de Função</h2>
+            <div class="results-grid">
+                <div class="result-item">
+                    <div class="result-value" id="pfna_resultado">-</div>
+                    <div class="result-label">PF Não Ajustados</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="fat_resultado">-</div>
+                    <div class="result-label">Fator de Ajuste</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-value" id="pfa_resultado">-</div>
+                    <div class="result-label">PF Ajustados</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção de Precificação -->
+        <div class="pricing-section" id="precificacao" style="display: none;">
+            <h2>Precificação do Projeto</h2>
+            <div class="pricing-input">
+                <label>Valor por Ponto de Função (R$):</label>
+                <input type="number" id="valor_pf" step="0.01" min="0" value="100.00">
+            </div>
+            <div class="pricing-input">
+                <label>Horas por Ponto de Função:</label>
+                <input type="number" id="horas_pf" step="0.1" min="0" value="8.0">
+            </div>
+            <div class="pricing-input">
+                <label>Valor da Hora (R$):</label>
+                <input type="number" id="valor_hora" step="0.01" min="0" value="50.00">
+            </div>
+            
+            <button class="calculate-btn" onclick="calcularPrecificacao()">Calcular Preços</button>
+            
+            <div id="precos_resultado" style="display: none;">
+                <div class="final-price">
+                    💰 Preço por PF: R$ <span id="preco_pf">-</span>
+                </div>
+                <div class="final-price" style="margin-top: 10px;">
+                    ⏱️ Preço por Horas: R$ <span id="preco_horas">-</span>
+                </div>
+                <div class="final-price" style="margin-top: 10px; background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);">
+                    🎯 Total de Horas Estimadas: <span id="total_horas">-</span>h
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calcular() {
+            // Calcular PF Não Ajustados
+            let pfna = 0;
+            
+            // ALI
+            pfna += parseInt(document.getElementById('ali_simples').value || 0) * 7;
+            pfna += parseInt(document.getElementById('ali_medio').value || 0) * 10;
+            pfna += parseInt(document.getElementById('ali_complexo').value || 0) * 15;
+            
+            // AIE
+            pfna += parseInt(document.getElementById('aie_simples').value || 0) * 5;
+            pfna += parseInt(document.getElementById('aie_medio').value || 0) * 7;
+            pfna += parseInt(document.getElementById('aie_complexo').value || 0) * 10;
+            
+            // EE
+            pfna += parseInt(document.getElementById('ee_simples').value || 0) * 3;
+            pfna += parseInt(document.getElementById('ee_medio').value || 0) * 4;
+            pfna += parseInt(document.getElementById('ee_complexo').value || 0) * 6;
+            
+            // SE
+            pfna += parseInt(document.getElementById('se_simples').value || 0) * 4;
+            pfna += parseInt(document.getElementById('se_medio').value || 0) * 5;
+            pfna += parseInt(document.getElementById('se_complexo').value || 0) * 7;
+            
+            // CE
+            pfna += parseInt(document.getElementById('ce_simples').value || 0) * 3;
+            pfna += parseInt(document.getElementById('ce_medio').value || 0) * 4;
+            pfna += parseInt(document.getElementById('ce_complexo').value || 0) * 6;
+            
+            // Calcular Fator de Ajuste Técnico
+            let somaFatores = 0;
+            for (let i = 1; i <= 14; i++) {
+                somaFatores += parseInt(document.getElementById(`fator_${i}`).value || 0);
+            }
+            
+            let fat = 0.65 + (0.01 * somaFatores);
+            
+            // Calcular PF Ajustados
+            let pfa = Math.round(pfna * fat);
+            
+            // Exibir resultados
+            document.getElementById('pfna_resultado').textContent = pfna;
+            document.getElementById('fat_resultado').textContent = fat.toFixed(2);
+            document.getElementById('pfa_resultado').textContent = pfa;
+            
+            document.getElementById('resultados').style.display = 'block';
+            document.getElementById('precificacao').style.display = 'block';
+            
+            // Scroll suave para os resultados
+            document.getElementById('resultados').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+        
+        function calcularPrecificacao() {
+            const pfa = parseInt(document.getElementById('pfa_resultado').textContent);
+            const valorPF = parseFloat(document.getElementById('valor_pf').value || 0);
+            const horasPF = parseFloat(document.getElementById('horas_pf').value || 0);
+            const valorHora = parseFloat(document.getElementById('valor_hora').value || 0);
+            
+            const precoPF = pfa * valorPF;
+            const totalHoras = pfa * horasPF;
+            const precoHoras = totalHoras * valorHora;
+            
+            document.getElementById('preco_pf').textContent = precoPF.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            
+            document.getElementById('preco_horas').textContent = precoHoras.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            
+            document.getElementById('total_horas').textContent = totalHoras.toFixed(1);
+            
+            document.getElementById('precos_resultado').style.display = 'block';
+        }
+        
+        // Auto-calcular quando os inputs de precificação mudarem
+        document.getElementById('valor_pf').addEventListener('input', calcularPrecificacao);
+        document.getElementById('horas_pf').addEventListener('input', calcularPrecificacao);
+        document.getElementById('valor_hora').addEventListener('input', calcularPrecificacao);
+    </script>
+</body>
+</html>
